@@ -1,46 +1,65 @@
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
-import styles from "./ContactForm.module.css";
+import { useState } from 'react';
+import PropTypes from 'prop-types';
 
 const ContactForm = ({ onSubmit }) => {
-  const initialValues = { name: "", number: "" };
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
 
-  const validationSchema = Yup.object({
-    name: Yup.string()
-      .min(3, "Minimum 3 characters")
-      .max(50, "Maximum 50 characters")
-      .required("Name is required"),
-    number: Yup.string()
-      .matches(/^\d{3}-\d{2}-\d{2}$/, "Format: XXX-XX-XX")
-      .required("Number is required"),
-  });
+  const handleChange = event => {
+    const { name, value } = event.target;
 
-  const handleSubmit = (values, { resetForm }) => {
-    onSubmit(values);
-    resetForm();
+    if (name === 'name') {
+      setName(value);
+    } else if (name === 'number') {
+      setNumber(value);
+    }
+  };
+
+  const handleSubmit = event => {
+    event.preventDefault();
+
+    // Передаємо дані до App через onSubmit
+    onSubmit({ name, number });
+
+    // Очищаємо поля форми
+    setName('');
+    setNumber('');
   };
 
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      onSubmit={handleSubmit}
-    >
-      <Form className={styles.form}>
-        <label>
-          Name:
-          <Field type="text" name="name" />
-          <ErrorMessage name="name" component="div" className={styles.error} />
-        </label>
-        <label>
-          Number:
-          <Field type="text" name="number" />
-          <ErrorMessage name="number" component="div" className={styles.error} />
-        </label>
-        <button type="submit">Add contact</button>
-      </Form>
-    </Formik>
+    <form onSubmit={handleSubmit}>
+      <label>
+        Name
+        <input
+          type="text"
+          name="name"
+          value={name}
+          onChange={handleChange}
+          pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
+          title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
+          required
+        />
+      </label>
+      <label>
+        Number
+        <input
+          type="tel"
+          name="number"
+          value={number}
+          onChange={handleChange}
+          pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
+          title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
+          required
+        />
+      </label>
+      <button type="submit">Add contact</button>
+    </form>
   );
 };
 
+ContactForm.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+};
+
 export default ContactForm;
+
